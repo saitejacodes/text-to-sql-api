@@ -319,7 +319,7 @@ def run_benchmark() -> BenchmarkResponse:
         latency_sum += (time.time() - t0) * 1000
 
         # Delay between queries to avoid LLM rate limits
-        time.sleep(15)  # 15s = ~4 RPM, safe for Groq free tier
+        time.sleep(22)  # 22s = ~2.7 RPM, absolutely safe for Groq free tier
 
     return BenchmarkResponse(
         total_queries=total,
