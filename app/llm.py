@@ -177,7 +177,7 @@ def generate_with_groq(prompt: str) -> Optional[str]:
             if resp.status_code == 200:
                 return resp.json()["choices"][0]["message"]["content"].strip()
             elif resp.status_code == 429:
-                wait_time = 10 * (attempt + 1)
+                wait_time = 15 * (2 ** attempt)  # 15s → 30s → 60s exponential
                 logger.warning("Groq rate limit (429). Retrying in %ds...", wait_time)
                 time.sleep(wait_time)
                 continue
