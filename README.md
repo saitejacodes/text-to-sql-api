@@ -273,16 +273,3 @@ real execution-match testing without an external database server.
 
 ---
 
-## Screenshots
-
-### FastAPI running on localhost (`/docs`)
-[Add screenshot here]
-
-### `POST /retrieve` response
-[Add screenshot here]
-
-### `POST /generate-sql` response
-[Add screenshot here]
-
-### `POST /benchmark` response
-[Add screenshot here]
