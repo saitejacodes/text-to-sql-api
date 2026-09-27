@@ -26,3 +26,8 @@ env/
 # macOS metadata
 .DS_Store
 __MACOSX/
+
+# caches (LLM responses, value indexes)
+.cache/
+.ruff_cache/
+examples/*.sqlite
