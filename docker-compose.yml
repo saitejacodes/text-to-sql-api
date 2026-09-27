@@ -1,0 +1,12 @@
+services:
+  api:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      T2SQL_LLM_BASE_URL: ${T2SQL_LLM_BASE_URL:-http://host.docker.internal:11434}
+      T2SQL_LLM_MODEL: ${T2SQL_LLM_MODEL:-qwen2.5-coder:7b}
+      T2SQL_LLM_API_KEY: ${T2SQL_LLM_API_KEY:-ollama}
+    volumes:
+      # put your own .sqlite files here; mounted read-only
+      - ./examples:/app/examples:ro
+    extra_hosts: ["host.docker.internal:host-gateway"]
