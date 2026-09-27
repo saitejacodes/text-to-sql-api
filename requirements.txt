@@ -1,9 +1,0 @@
-fastapi
-uvicorn
-pydantic
-datasets
-sentence-transformers
-sqlglot
-python-dotenv
-huggingface_hub
-requests
