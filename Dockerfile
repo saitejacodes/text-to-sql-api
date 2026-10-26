@@ -14,8 +14,13 @@ RUN python -c "import sqlite3,pathlib; c=sqlite3.connect('examples/university.sq
 RUN useradd --create-home --uid 10001 app && mkdir -p /app/.cache && chown -R app /app/.cache
 USER app
 
+ARG GIT_SHA=dev
 ENV T2SQL_DATABASES_DIR=/app/examples \
-    T2SQL_LLM_BASE_URL=http://host.docker.internal:11434
+    T2SQL_LLM_BASE_URL=http://host.docker.internal:11434 \
+    T2SQL_GIT_SHA=${GIT_SHA} \
+    PORT=8000
 EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=3s CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"
-CMD ["uvicorn", "t2sql.api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+HEALTHCHECK --interval=30s --timeout=3s CMD python -c "import os, urllib.request; urllib.request.urlopen(f'http://127.0.0.1:{os.environ[\"PORT\"]}/health')"
+# Cloud Run sets $PORT. --proxy-headers makes the client IP (used by the rate limiter) the
+# caller's, not the load balancer's.
+CMD ["sh", "-c", "exec uvicorn t2sql.api.app:app --host 0.0.0.0 --port ${PORT} --proxy-headers --forwarded-allow-ips='*'"]

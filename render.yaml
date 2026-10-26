@@ -1,0 +1,41 @@
+# Render Blueprint: the FastAPI backend (Docker) and the React frontend (static site).
+# Secrets and the two cross-service URLs are entered in the Render dashboard (sync: false).
+services:
+  - type: web
+    name: asksql-api
+    runtime: docker
+    region: singapore
+    # no `plan`: Render's default paid instance (0.5 CPU, 512 MB), which never sleeps
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: "10000"
+      - key: T2SQL_LLM_PROVIDER
+        value: groq
+      - key: T2SQL_LLM_MODEL
+        value: qwen/qwen3.8-27b
+      - key: T2SQL_LLM_API_KEY
+        sync: false
+      - key: T2SQL_LLM_MAX_RETRIES
+        value: "3"
+      - key: T2SQL_RATE_LIMIT
+        value: 10/minute
+      - key: T2SQL_ALLOWED_ORIGINS # the website's URL, e.g. https://asksql-web.onrender.com
+        sync: false
+
+  - type: web
+    name: asksql-web
+    runtime: static
+    rootDir: web
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: VITE_API_URL # the API's URL, e.g. https://asksql-api.onrender.com
+        sync: false
