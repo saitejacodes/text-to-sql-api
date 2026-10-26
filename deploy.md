@@ -4,7 +4,7 @@ Two services from one repo, defined in [`render.yaml`](render.yaml):
 
 | Service | What | URL (if the name is free) |
 |---|---|---|
-| `asksql-api` | FastAPI backend, built from the `Dockerfile`, Singapore, paid instance (never sleeps) | `https://asksql-api.onrender.com` |
+| `asksql-api` | FastAPI backend, built from the `Dockerfile`, Singapore, free plan (sleeps after 15 min idle) | `https://asksql-api.onrender.com` |
 | `asksql-web` | React frontend, static site built from `web/` | `https://asksql-web.onrender.com` |
 
 The demo databases are baked into the image read-only. The LLM key lives only in Render's
@@ -66,7 +66,7 @@ Then open the website on your laptop **and** your phone:
 
 ## Costs and limits
 
-- `asksql-api` uses Render's default paid instance; the $50 credit covers it for months.
+- `asksql-api` is on the free plan: it sleeps after 15 minutes without traffic and the next visit waits ~30–60 s while it wakes. To keep it always on, change `plan: free` to `plan: 0.5c-512mb` in `render.yaml` (paid; Render credit covers it).
   The static site is free. Render → **Billing** shows usage.
 - Groq free tier (measured 26 Oct 2026): 8,000 tokens/minute, 1,000 requests/day. One new
   question ≈ 6,400 tokens, so about one new question per minute. Repeated questions are served
