@@ -14,10 +14,8 @@ RUN python -c "import sqlite3,pathlib; c=sqlite3.connect('examples/university.sq
 RUN useradd --create-home --uid 10001 app && mkdir -p /app/.cache && chown -R app /app/.cache
 USER app
 
-ARG GIT_SHA=dev
+# No LLM base URL here: it would override T2SQL_LLM_PROVIDER. docker-compose sets Ollama's.
 ENV T2SQL_DATABASES_DIR=/app/examples \
-    T2SQL_LLM_BASE_URL=http://host.docker.internal:11434 \
-    T2SQL_GIT_SHA=${GIT_SHA} \
     PORT=8000
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s CMD python -c "import os, urllib.request; urllib.request.urlopen(f'http://127.0.0.1:{os.environ[\"PORT\"]}/health')"
