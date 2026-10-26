@@ -1,0 +1,12 @@
+{
+  "university": [
+    "How many students enrolled in each year?",
+    "Which instructors teach in the Stata Center?",
+    "List all online courses with their department",
+    "What is the prerequisite of Data Structures?",
+    "Which department has the most courses?",
+    "Show each student with their advisor's name",
+    "Which classroom has the largest capacity?",
+    "Delete all students who enrolled before 2023"
+  ]
+}

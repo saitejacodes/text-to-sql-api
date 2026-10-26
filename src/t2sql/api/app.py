@@ -1,6 +1,8 @@
 """HTTP API.
 
-GET  /health                         liveness + which model is configured
+GET  /health                         liveness + which model and commit are running
+GET  /metrics                        Prometheus metrics
+/api/*                               web API for the React frontend (see t2sql.api.web)
 GET  /v1/databases                   databases this service may query
 GET  /v1/databases/{db}/schema       the schema exactly as the model sees it
 POST /v1/query                       question -> SQL (+ rows, confidence, candidate trace)
@@ -18,10 +20,14 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
+from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel, Field
+from slowapi.errors import RateLimitExceeded
 
 from t2sql import __version__
+from t2sql.api import web
 from t2sql.config import get_settings
 from t2sql.db.executor import execute
 from t2sql.guard.sql_guard import check_sql
@@ -114,6 +120,7 @@ async def lifespan(app: FastAPI):
         s.llm_timeout_s,
         s.llm_max_concurrency,
         s.llm_cache_path,
+        max_retries=s.llm_max_retries,
     )
     log.info(
         "started",
@@ -129,6 +136,25 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="t2sql — Text-to-SQL API", version=__version__, lifespan=lifespan)
+app.state.limiter = web.limiter
+app.include_router(web.router)
+# Only the frontend's own origins may call the API from a browser; empty means none.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=get_settings().origins,
+    allow_methods=["GET", "POST"],
+    allow_headers=["content-type", "x-request-id"],
+    expose_headers=["x-request-id", "x-process-time-ms"],
+)
+Instrumentator().instrument(app).expose(app, include_in_schema=False)
+
+
+@app.exception_handler(RateLimitExceeded)
+async def rate_limited(_: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={"detail": f"Too many requests (limit {exc.detail}). Please wait and try again."},
+    )
 
 
 @app.middleware("http")
@@ -188,7 +214,7 @@ async def playground():
 @app.get("/health")
 async def health(request: Request):
     s = request.app.state.settings
-    return {"status": "ok", "version": __version__, "model": s.llm_model}
+    return {"status": "ok", "version": __version__, "commit": s.git_sha, "model": s.llm_model}
 
 
 @app.get("/v1/databases")

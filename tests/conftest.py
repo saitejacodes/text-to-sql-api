@@ -9,6 +9,10 @@ ROOT = Path(__file__).resolve().parent.parent
 @pytest.fixture(autouse=True)
 def _isolated_caches(tmp_path, monkeypatch):
     monkeypatch.setenv("T2SQL_VALUE_CACHE", str(tmp_path / "values"))
+    # Environment beats .env, so a developer's real provider and key never reach a test.
+    monkeypatch.setenv("T2SQL_LLM_PROVIDER", "")
+    monkeypatch.setenv("T2SQL_LLM_MODEL", "qwen2.5-coder:7b")
+    monkeypatch.setenv("T2SQL_LLM_API_KEY", "test")
 
 
 @pytest.fixture(scope="session")
