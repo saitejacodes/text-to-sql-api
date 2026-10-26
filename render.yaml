@@ -5,7 +5,7 @@ services:
     name: asksql-api
     runtime: docker
     region: singapore
-    # no `plan`: Render's default paid instance (0.5 CPU, 512 MB), which never sleeps
+    plan: free
     dockerfilePath: ./Dockerfile
     healthCheckPath: /health
     envVars:
